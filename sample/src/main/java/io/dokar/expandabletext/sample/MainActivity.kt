@@ -90,7 +90,7 @@ fun Example() {
         ShowMoreText(
             toggleText = { expanded ->
                 Text(
-                    text = if (expanded) "Shoe less" else "Show more",
+                    text = if (expanded) "Show less" else "Show more",
                     color = MaterialTheme.colors.primary,
                 )
             }
