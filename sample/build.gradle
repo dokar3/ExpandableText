@@ -4,6 +4,8 @@ plugins {
 }
 
 android {
+    namespace 'io.dokar.expandabletext.sample'
+
     compileSdk 32
 
     defaultConfig {
