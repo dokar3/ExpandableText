@@ -6,12 +6,12 @@ plugins {
 android {
     namespace 'io.dokar.expandabletext.sample'
 
-    compileSdk 32
+    compileSdk compile_sdk
 
     defaultConfig {
         applicationId "io.dokar.expandabletext.sample"
         minSdk 21
-        targetSdk 32
+        targetSdk target_sdk
         versionCode 1
         versionName "1.0"
 
