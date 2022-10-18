@@ -19,25 +19,41 @@ implementation 'io.github.dokar3:expandabletext:latest_version'
 Show some texts:
 
 ```kotlin
-val text = "Your long text...".repeat(10)
+val text = "Your long text ".repeat(10)
 var expanded by remember { mutableStateOf(false) }
 ExpandableText(
     expanded = expanded,
     text = text,
+    collapsedMaxLines = 2,
     modifier = Modifier
         .animateContentSize()
         .clickable { expanded = !expanded },
-    toggleContent = {
-        Text(text = if (expanded) "Show less" else "Show more")
-    },
-    maxLines = 2,
+    toggle = { Text(text = if (expanded) "Show less" else "Show more") },
 )
 ```
 
 # Known problems
 
-- `toggleContent` will not visible if `overflow` was set to `TextOverflow.Ellipsis`
-
+- `toggle` will not be visible if:
+    - `overflow` was set to `TextOverflow.Ellipsis`:
+      ```kotlin
+      ExpandableText(
+          // ...
+          overflow = TextOverflow.Ellipsis,
+      )
+      ```
+    - `text` is an `AnnoatedString` and a `ParagraphStyle` was applied to the line needed to show the toggle. For example:
+      ```kotlin
+      val text = buildAnnotatedString {
+          withStyle(ParagraphStyle()) {
+              append("Some long text...")
+          }
+      }
+      ExpandableText(
+        text = text,
+        // ...
+      )
+      ```
 
 # License
 
