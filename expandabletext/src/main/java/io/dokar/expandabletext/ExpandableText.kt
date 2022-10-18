@@ -60,6 +60,8 @@ private data class ExpandableTextInfo(
  *
  * @param expanded Controls the expanded state of text.
  * @param text Text to display.
+ * @param collapsedMaxLines The max lines when [expanded] is false.
+ * @param expandedMaxLines The max lines when [expanded] is true. Defaults to [Int.MAX_VALUE].
  * @param toggle The toggle displayed at end of the text if text can not be fully displayed.
  * @see [Text]
  */
@@ -67,7 +69,9 @@ private data class ExpandableTextInfo(
 fun ExpandableText(
     expanded: Boolean,
     text: String,
+    collapsedMaxLines: Int,
     modifier: Modifier = Modifier,
+    expandedMaxLines: Int = Int.MAX_VALUE,
     toggle: @Composable (() -> Unit)? = null,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -80,8 +84,6 @@ fun ExpandableText(
     lineHeight: TextUnit = TextUnit.Unspecified,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    expandedMaxLines: Int = Int.MAX_VALUE,
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current
@@ -103,7 +105,7 @@ fun ExpandableText(
         lineHeight = lineHeight,
         overflow = overflow,
         softWrap = softWrap,
-        maxLines = maxLines,
+        collapsedMaxLines = collapsedMaxLines,
         expandedMaxLines = expandedMaxLines,
         inlineContent = inlineContent,
         onTextLayout = onTextLayout,
@@ -116,6 +118,8 @@ fun ExpandableText(
  *
  * @param expanded Controls the expanded state of text.
  * @param text Text to display.
+ * @param collapsedMaxLines The max lines when [expanded] is false.
+ * @param expandedMaxLines The max lines when [expanded] is true. Defaults to [Int.MAX_VALUE].
  * @param toggle The toggle displayed at end of the text if text can not be fully displayed.
  * @see [Text]
  */
@@ -123,7 +127,9 @@ fun ExpandableText(
 fun ExpandableText(
     expanded: Boolean,
     text: AnnotatedString,
+    collapsedMaxLines: Int,
     modifier: Modifier = Modifier,
+    expandedMaxLines: Int = Int.MAX_VALUE,
     toggle: @Composable (() -> Unit)? = null,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -136,8 +142,6 @@ fun ExpandableText(
     lineHeight: TextUnit = TextUnit.Unspecified,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    expandedMaxLines: Int = Int.MAX_VALUE,
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current
@@ -162,7 +166,7 @@ fun ExpandableText(
         }
     }
 
-    val layoutResultFlow = remember(expandableText, expanded, maxLines, expandedMaxLines) {
+    val layoutResultFlow = remember(expandableText, expanded, collapsedMaxLines, expandedMaxLines) {
         MutableStateFlow<TextLayoutResult?>(null)
     }
 
@@ -197,7 +201,7 @@ fun ExpandableText(
         layoutRet: TextLayoutResult,
     ) {
         if (toggleSize.width == 0) return
-        val actualMaxLines = if (expanded) expandedMaxLines else maxLines
+        val actualMaxLines = if (expanded) expandedMaxLines else collapsedMaxLines
         if (layoutRet.lineCount == actualMaxLines) {
             val lineEnd = layoutRet.getLineEnd(layoutRet.lineCount - 1)
             if (lineEnd == expandableText.length) {
@@ -264,7 +268,7 @@ fun ExpandableText(
         lineHeight = lineHeight,
         overflow = overflow,
         softWrap = softWrap,
-        maxLines = if (expanded) expandedMaxLines else maxLines,
+        maxLines = if (expanded) expandedMaxLines else collapsedMaxLines,
         inlineContent = expandableInlineContent,
         onTextLayout = {
             onTextLayout(it)
