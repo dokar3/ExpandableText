@@ -6,7 +6,6 @@ import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,12 +31,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.update
 import kotlin.math.max
 
 
@@ -166,26 +159,21 @@ fun ExpandableText(
         }
     }
 
-    val layoutResultFlow = remember(expandableText, expanded, collapsedMaxLines, expandedMaxLines) {
-        MutableStateFlow<TextLayoutResult?>(null)
-    }
+    val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
 
-    val toggleSizeFlow = remember { MutableStateFlow(ToggleSize()) }
+    val toggleSize = measureToggle(toggle)
 
-    toggleSizeFlow.tryEmit(measureToggle(toggle))
-
-    val currToggleSize by toggleSizeFlow.collectAsState()
     val expandableInlineContent = remember(
         inlineContent,
         toggle as Any?,
         textInfo,
-        currToggleSize,
+        toggleSize,
     ) {
         if (textInfo.shouldShowToggleContent && toggle != null) {
             val content = InlineTextContent(
                 placeholder = Placeholder(
-                    width = currToggleSize.widthSp,
-                    height = currToggleSize.heightSp,
+                    width = toggleSize.widthSp,
+                    height = toggleSize.heightSp,
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center,
                 ),
                 children = { toggle() }
@@ -239,19 +227,21 @@ fun ExpandableText(
                 shouldShowToggleContent = true,
             )
         } else {
-            textInfo = textInfo.copy(
-                visibleCharCount = text.length,
-            )
+            textInfo = textInfo.copy(visibleCharCount = text.length)
         }
     }
 
-    LaunchedEffect(toggleSizeFlow, layoutResultFlow) {
-        combine(
-            toggleSizeFlow.filter { it.width > 0 },
-            layoutResultFlow.filterNotNull(),
-        ) { toggleSize, textLayoutResult ->
-            tryUpdateTextInfo(toggleSize, textLayoutResult)
-        }.collect()
+    LaunchedEffect(
+        expanded,
+        collapsedMaxLines,
+        expandedMaxLines,
+        toggleSize,
+        layoutResult.value,
+    ) {
+        val layoutRet = layoutResult.value ?: return@LaunchedEffect
+        if (toggleSize.width > 0) {
+            tryUpdateTextInfo(toggleSize, layoutRet)
+        }
     }
 
     Text(
@@ -272,7 +262,7 @@ fun ExpandableText(
         inlineContent = expandableInlineContent,
         onTextLayout = {
             onTextLayout(it)
-            layoutResultFlow.update { _ -> it }
+            layoutResult.value = it
         },
         style = style
     )
