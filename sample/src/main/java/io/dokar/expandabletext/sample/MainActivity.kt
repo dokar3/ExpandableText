@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +31,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.dokar.expandabletext.ExpandableText
@@ -76,19 +80,19 @@ fun Example() {
         Spacer(modifier = Modifier.height(16.dp))
 
         val text = "Very short text"
-        Header("Fixed (maxLines = ${text.length})")
-        ExpandableText(expanded = false, text = text, maxLines = text.length)
+        Header("Not expandable (maxLines = ${text.length})")
+        ExpandableText(expanded = false, text = text, collapsedMaxLines = text.length)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Header("Expandable")
+        Header("No toggle")
         ShowMoreText()
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Header("Expandable")
+        Header("Text() toggle")
         ShowMoreText(
-            toggleText = { expanded ->
+            toggle = { expanded ->
                 Text(
                     text = if (expanded) "Show less" else "Show more",
                     color = MaterialTheme.colors.primary,
@@ -98,9 +102,9 @@ fun Example() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Header("Expandable")
+        Header("Icon() toggle")
         ShowMoreText(
-            toggleText = { expanded ->
+            toggle = { expanded ->
                 Icon(
                     imageVector = if (expanded) {
                         Icons.Default.KeyboardArrowUp
@@ -112,6 +116,21 @@ fun Example() {
                 )
             }
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Header("Right-to-left")
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            ShowMoreText(
+                text = LoremIpsumArabic,
+                toggle = { expanded ->
+                    Text(
+                        text = if (expanded) "Show less" else "Show more",
+                        color = MaterialTheme.colors.primary,
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -128,26 +147,14 @@ fun Header(text: String) {
 @Composable
 fun ShowMoreText(
     modifier: Modifier = Modifier,
-    toggleText: @Composable ((expanded: Boolean) -> Unit)? = null,
+    text: String = LoremIpsum(words = 100).values.first(),
+    toggle: @Composable ((expanded: Boolean) -> Unit)? = null,
 ) {
-    val text = """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper, 
-        ex eu efficitur tincidunt, quam felis ultricies ex, quis consectetur nisl mauris 
-        dignissim nisi. Praesent purus turpis, venenatis vitae ornare ac, suscipit quis lorem. 
-        Nulla vitae tellus venenatis, pulvinar ipsum nec, tristique nibh. Cras vestibulum faucibus 
-        sem, ac imperdiet odio faucibus eu. Donec eget ex ac neque pharetra pellentesque et id 
-        massa. Etiam rhoncus tortor sed magna pharetra gravida. Sed aliquam ipsum ac purus blandit 
-        hendrerit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia 
-        curae; Duis quis consequat ipsum, id malesuada orci. Praesent ut leo eu ex posuere 
-        convallis. Aliquam et dolor nec risus mattis laoreet. Sed volutpat erat ut nibh vulputate, 
-        a vulputate augue vestibulum. Integer efficitur, lectus eget bibendum congue, erat orci 
-        imperdiet erat, at convallis metus ipsum quis nibh. Sed aliquet neque ullamcorper massa 
-        molestie tempus. Suspendisse potenti. Sed gravida rutrum arcu.
-    """.trimIndent()
     var expanded by remember { mutableStateOf(false) }
     ExpandableText(
         expanded = expanded,
         text = text,
+        collapsedMaxLines = 3,
         modifier = modifier
             .animateContentSize()
             .clickable(
@@ -155,11 +162,16 @@ fun ShowMoreText(
                 indication = null,
                 onClick = { expanded = !expanded }
             ),
-        toggleContent = {
-            if (toggleText != null) {
-                toggleText(expanded)
+        toggle = {
+            if (toggle != null) {
+                toggle(expanded)
             }
         },
-        maxLines = 4,
     )
 }
+
+// Text copied from https://istizada.com/arabic-lorem-ipsum/
+private const val LoremIpsumArabic =
+    """لكن لا بد أن أوضح لك أن كل هذه الأفكار المغلوطة حول استنكار  النشوة وتمجيد الألم نشأت بالفعل، وسأعرض لك التفاصيل لتكتشف حقيقة وأساس تلك السعادة البشرية، فلا أحد يرفض أو يكره أو يتجنب الشعور بالسعادة، ولكن بفضل هؤلاء الأشخاص الذين لا يدركون بأن السعادة لا بد أن نستشعرها بصورة أكثر عقلانية ومنطقية فيعرضهم هذا لمواجهة الظروف الأليمة، وأكرر بأنه لا يوجد من يرغب في الحب ونيل المنال ويتلذذ بالآلام، الألم هو الألم ولكن نتيجة لظروف ما قد تكمن السعاده فيما نتحمله من كد وأسي.
+و سأعرض مثال حي لهذا، من منا لم يتحمل جهد بدني شاق إلا من أجل الحصول على ميزة أو فائدة؟ ولكن من لديه الحق أن ينتقد شخص ما أراد أن يشعر بالسعادة التي لا تشوبها عواقب أليمة أو آخر أراد أن يتجنب الألم الذي ربما تنجم عنه بعض المتعة ؟ 
+علي الجانب الآخر نشجب ونستنكر هؤلاء الرجال المفتونون بنشوة اللحظة الهائمون في رغباتهم فلا يدركون ما يعقبها من الألم والأسي المحتم، واللوم كذلك يشمل هؤلاء الذين أخفقوا في واجباتهم نتيجة لضعف إرادتهم فيتساوي مع هؤلاء الذين يتجنبون وينأون عن تحمل الكدح والألم ."""
