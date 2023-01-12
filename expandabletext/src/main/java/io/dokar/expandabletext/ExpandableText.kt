@@ -214,13 +214,33 @@ fun ExpandableText(
                     x = layoutRet.size.width - toggleSize.width.toFloat(),
                     y = lineTop + toggleSize.height / 2f,
                 )
-                layoutRet.getOffsetForPosition(toggleTopLeft)
+                var count = layoutRet.getOffsetForPosition(toggleTopLeft)
+                while (count > 0) {
+                    val charRight = layoutRet.getBoundingBox(offset = count - 1).right
+                    val isOverlapped = charRight >= toggleTopLeft.x
+                    if (isOverlapped) {
+                        count--
+                    } else {
+                        break
+                    }
+                }
+                count
             } else {
                 val toggleTopRight = Offset(
                     x = toggleSize.width.toFloat(),
                     y = lineTop + toggleSize.height / 2f,
                 )
-                layoutRet.getOffsetForPosition(toggleTopRight)
+                var count = layoutRet.getOffsetForPosition(toggleTopRight)
+                while (count > 0) {
+                    val charLeft = layoutRet.getBoundingBox(offset = count - 1).left
+                    val isOverlapped = charLeft <= toggleTopRight.x
+                    if (isOverlapped) {
+                        count--
+                    } else {
+                        break
+                    }
+                }
+                count
             }
             textInfo = textInfo.copy(
                 visibleCharCount = visibleChars,
