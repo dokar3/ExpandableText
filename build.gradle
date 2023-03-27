@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        compose_bom_version = '2023.01.00'
-        compose_compiler_version = '1.4.0'
+        compose_bom_version = '2023.03.00'
+        compose_compiler_version = '1.4.4'
         compile_sdk = 33
         target_sdk = 33
     }
@@ -9,7 +9,7 @@ buildscript {
 plugins {
     id 'com.android.application' version '7.4.0' apply false
     id 'com.android.library' version '7.4.0' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
+    id 'org.jetbrains.kotlin.android' version '1.8.10' apply false
     id 'com.vanniktech.maven.publish' version '0.25.1' apply false
 }
 
