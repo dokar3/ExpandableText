@@ -218,7 +218,8 @@ fun ExpandableText(
                 while (count > 0) {
                     val charRight = layoutRet.getBoundingBox(offset = count - 1).right
                     val isOverlapped = charRight >= toggleTopLeft.x
-                    if (isOverlapped) {
+                    val isWhitespace = text[count - 1].isWhitespace()
+                    if (isOverlapped || isWhitespace) {
                         count--
                     } else {
                         break
@@ -234,7 +235,8 @@ fun ExpandableText(
                 while (count > 0) {
                     val charLeft = layoutRet.getBoundingBox(offset = count - 1).left
                     val isOverlapped = charLeft <= toggleTopRight.x
-                    if (isOverlapped) {
+                    val isWhitespace = text[count - 1].isWhitespace()
+                    if (isOverlapped || isWhitespace) {
                         count--
                     } else {
                         break
