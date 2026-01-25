@@ -1,6 +1,6 @@
 # ExpandableText
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.dokar3/expandabletext/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.dokar3/expandabletext)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.dokar3/expandabletext?style=flat-square&color=%23ea197e)
 
 Expandable text, similar to `Text()` in Jetpack Compose.
 
