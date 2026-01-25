@@ -19,15 +19,14 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -106,11 +105,13 @@ fun Example() {
         ShowMoreText(
             toggle = { expanded ->
                 Icon(
-                    imageVector = if (expanded) {
-                        Icons.Default.KeyboardArrowUp
-                    } else {
-                        Icons.Default.KeyboardArrowDown
-                    },
+                    painter = painterResource(
+                        id = if (expanded) {
+                            R.drawable.ic_keyboard_arrow_up
+                        } else {
+                            R.drawable.ic_keyboard_arrow_down
+                        }
+                    ),
                     contentDescription = null,
                     tint = MaterialTheme.colors.primary,
                 )
@@ -150,7 +151,7 @@ fun ShowMoreText(
     text: String = LoremIpsum(words = 100).values.first(),
     toggle: @Composable ((expanded: Boolean) -> Unit)? = null,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     ExpandableText(
         expanded = expanded,
         text = text,

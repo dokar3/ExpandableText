@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
     id 'com.vanniktech.maven.publish'
     id 'org.jetbrains.kotlin.plugin.compose'
 }
@@ -11,7 +10,7 @@ android {
     compileSdk compile_sdk
 
     defaultConfig {
-        minSdk 21
+        minSdk min_sdk
         targetSdk target_sdk
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -30,9 +29,6 @@ android {
     }
     buildFeatures {
         compose true
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
     }
 }
 

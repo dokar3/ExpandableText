@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.compose'
 }
 
@@ -11,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "io.dokar.expandabletext.sample"
-        minSdk 21
+        minSdk min_sdk
         targetSdk target_sdk
         versionCode 1
         versionName "1.0"
@@ -31,9 +30,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
     }
     buildFeatures {
         compose true
