@@ -7,8 +7,10 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -43,10 +45,7 @@ private data class ToggleSize(
     val heightSp: TextUnit = 0.sp
 )
 
-private data class ExpandableTextInfo(
-    val visibleCharCount: Int,
-    val shouldShowToggleContent: Boolean,
-)
+
 
 /**
  * Display an expandable text, require `maxLines` to make text expandable.
@@ -139,19 +138,17 @@ fun ExpandableText(
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current
 ) {
-    var textInfo by remember(text) {
-        mutableStateOf(
-            ExpandableTextInfo(
-                visibleCharCount = text.length,
-                shouldShowToggleContent = false,
-            )
-        )
+    var visibleCharCount by rememberSaveable(text) {
+        mutableIntStateOf(text.length)
+    }
+    var shouldShowToggleContent by rememberSaveable(text) {
+        mutableStateOf(false)
     }
 
-    val expandableText = remember(text, toggle as Any?, textInfo) {
-        if (textInfo.shouldShowToggleContent && toggle != null) {
+    val expandableText = remember(text, toggle as Any?, visibleCharCount, shouldShowToggleContent) {
+        if (shouldShowToggleContent && toggle != null) {
             buildAnnotatedString {
-                append(text.subSequence(0, textInfo.visibleCharCount))
+                append(text.subSequence(0, visibleCharCount))
                 appendInlineContent(INLINE_CONTENT_ID)
             }
         } else {
@@ -166,10 +163,10 @@ fun ExpandableText(
     val expandableInlineContent = remember(
         inlineContent,
         toggle as Any?,
-        textInfo,
+        shouldShowToggleContent,
         toggleSize,
     ) {
-        if (textInfo.shouldShowToggleContent && toggle != null) {
+        if (shouldShowToggleContent && toggle != null) {
             val content = InlineTextContent(
                 placeholder = Placeholder(
                     width = toggleSize.widthSp,
@@ -194,12 +191,12 @@ fun ExpandableText(
             val lineEnd = layoutRet.getLineEnd(layoutRet.lineCount - 1)
             if (lineEnd == expandableText.length) {
                 // Text is fully displayed
-                val visibleChars = if (textInfo.shouldShowToggleContent) {
+                val visibleChars = if (shouldShowToggleContent) {
                     expandableText.length - 1
                 } else {
                     expandableText.length
                 }
-                textInfo = textInfo.copy(visibleCharCount = visibleChars)
+                visibleCharCount = visibleChars
                 return
             }
             val lineTop = layoutRet.getLineTop(layoutRet.lineCount - 1)
@@ -244,12 +241,10 @@ fun ExpandableText(
                 }
                 count
             }
-            textInfo = textInfo.copy(
-                visibleCharCount = visibleChars,
-                shouldShowToggleContent = true,
-            )
+            visibleCharCount = visibleChars
+            shouldShowToggleContent = true
         } else {
-            textInfo = textInfo.copy(visibleCharCount = text.length)
+            visibleCharCount = text.length
         }
     }
 
