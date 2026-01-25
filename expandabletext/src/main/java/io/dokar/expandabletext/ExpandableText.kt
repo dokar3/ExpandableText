@@ -35,7 +35,6 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import kotlin.math.max
 
-
 private const val INLINE_CONTENT_ID = "EXPANDABLE_TEXT_TOGGLE"
 
 private data class ToggleSize(
@@ -44,8 +43,6 @@ private data class ToggleSize(
     val height: Int = 0,
     val heightSp: TextUnit = 0.sp
 )
-
-
 
 /**
  * Display an expandable text, require `maxLines` to make text expandable.
@@ -138,6 +135,7 @@ fun ExpandableText(
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current
 ) {
+    // Use rememberSaveable to persist truncation state across config changes
     var visibleCharCount by rememberSaveable(text) {
         mutableIntStateOf(text.length)
     }
@@ -145,10 +143,12 @@ fun ExpandableText(
         mutableStateOf(false)
     }
 
-    val expandableText = remember(text, toggle as Any?, visibleCharCount, shouldShowToggleContent) {
+    val expandableText = remember(text, toggle as Any?, visibleCharCount, shouldShowToggleContent, expanded) {
         if (shouldShowToggleContent && toggle != null) {
             buildAnnotatedString {
-                append(text.subSequence(0, visibleCharCount))
+                // When expanded, show full text to allow maxLines-driven animation
+                // When collapsed, show truncated text
+                append(if (expanded) text else text.subSequence(0, visibleCharCount))
                 appendInlineContent(INLINE_CONTENT_ID)
             }
         } else {
@@ -191,12 +191,28 @@ fun ExpandableText(
             val lineEnd = layoutRet.getLineEnd(layoutRet.lineCount - 1)
             if (lineEnd == expandableText.length) {
                 // Text is fully displayed
-                val visibleChars = if (shouldShowToggleContent) {
-                    expandableText.length - 1
+                val showToggle = if (expanded) {
+                    if (visibleCharCount < text.length) {
+                        shouldShowToggleContent
+                    } else {
+                        layoutRet.lineCount > collapsedMaxLines
+                    }
                 } else {
-                    expandableText.length
+                    shouldShowToggleContent
                 }
-                visibleCharCount = visibleChars
+                if (shouldShowToggleContent != showToggle) {
+                    // Update only if changed to prevent infinite recomposition loops
+                    shouldShowToggleContent = showToggle
+                }
+                if (expanded) {
+                    if (visibleCharCount != text.length) {
+                        // Update only if changed to prevent infinite recomposition loops
+                        visibleCharCount = text.length
+                    }
+                } else if (!showToggle && visibleCharCount != text.length) {
+                    // Update only if changed to prevent infinite recomposition loops
+                    visibleCharCount = text.length
+                }
                 return
             }
             val lineTop = layoutRet.getLineTop(layoutRet.lineCount - 1)
@@ -211,8 +227,10 @@ fun ExpandableText(
                     x = layoutRet.size.width - toggleSize.width.toFloat(),
                     y = lineTop + toggleSize.height / 2f,
                 )
+                // Guard with lineStart to prevent over-truncation on newlines
+                val lineStart = layoutRet.getLineStart(layoutRet.lineCount - 1)
                 var count = layoutRet.getOffsetForPosition(toggleTopLeft)
-                while (count > 0) {
+                while (count > lineStart) {
                     val charRight = layoutRet.getBoundingBox(offset = count - 1).right
                     val isOverlapped = charRight >= toggleTopLeft.x
                     val isWhitespace = text[count - 1].isWhitespace()
@@ -228,8 +246,9 @@ fun ExpandableText(
                     x = toggleSize.width.toFloat(),
                     y = lineTop + toggleSize.height / 2f,
                 )
+                val lineStart = layoutRet.getLineStart(layoutRet.lineCount - 1)
                 var count = layoutRet.getOffsetForPosition(toggleTopRight)
-                while (count > 0) {
+                while (count > lineStart) {
                     val charLeft = layoutRet.getBoundingBox(offset = count - 1).left
                     val isOverlapped = charLeft <= toggleTopRight.x
                     val isWhitespace = text[count - 1].isWhitespace()
@@ -241,10 +260,29 @@ fun ExpandableText(
                 }
                 count
             }
-            visibleCharCount = visibleChars
-            shouldShowToggleContent = true
+            if (visibleCharCount != visibleChars) {
+                // Update only if changed to prevent infinite recomposition loops
+                visibleCharCount = visibleChars
+            }
+            if (!shouldShowToggleContent) {
+                shouldShowToggleContent = true
+            }
         } else {
-            visibleCharCount = text.length
+            val showToggle = expanded && layoutRet.lineCount > collapsedMaxLines
+            if (visibleCharCount != text.length) {
+                // Update only if changed to prevent infinite recomposition loops
+                visibleCharCount = text.length
+            }
+            if (shouldShowToggleContent != showToggle) {
+                shouldShowToggleContent = showToggle
+            }
+            if (expanded) {
+                if (visibleCharCount != text.length) {
+                    visibleCharCount = text.length
+                }
+            } else if (/*!showToggle && */visibleCharCount != text.length) {
+                visibleCharCount = text.length
+            }
         }
     }
 

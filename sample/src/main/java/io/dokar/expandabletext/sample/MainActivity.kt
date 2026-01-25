@@ -19,7 +19,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.LayoutDirection
@@ -91,6 +91,19 @@ fun Example() {
 
         Header("Text() toggle")
         ShowMoreText(
+            toggle = { expanded ->
+                Text(
+                    text = if (expanded) "Show less" else "Show more",
+                    color = MaterialTheme.colors.primary,
+                )
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Header("Multiple newlines")
+        ShowMoreText(
+            text = "Line 1\nLine 2\nLine 3\n\n\nLine 6\nLine 7\nLine 8",
             toggle = { expanded ->
                 Text(
                     text = if (expanded) "Show less" else "Show more",
