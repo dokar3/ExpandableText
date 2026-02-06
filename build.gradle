@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlin_versoin = '2.3.0'
+        kotlin_versoin = '2.3.10'
         compose_bom_version = '2026.01.00'
         compile_sdk = 36
         target_sdk = 36
